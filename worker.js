@@ -5,7 +5,6 @@ const urlsToCache = [
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
-  '/doGet.gs',
   'https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-beta1/css/bootstrap.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'
 ];
