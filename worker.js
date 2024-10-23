@@ -3,8 +3,8 @@ const urlsToCache = [
   '/',
   '/index4.html',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
+  '/src/icons/icon-192x192.png',
+  '/src/icons/icon-512x512.png',
   'https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-beta1/css/bootstrap.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'
 ];
