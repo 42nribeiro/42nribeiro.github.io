@@ -466,20 +466,26 @@
           status: divPlano.querySelector("select").value,
         });
       }
-
-      function salvarPlanos() {
-        google.script.run
-          .withSuccessHandler(function (response) {
-            document.getElementById("treinosDados").value =
-              response.treinosDados;
-            document.getElementById("treinosPendentes").value =
-              response.treinosPendentes;
-            document.getElementById("treinosFalta").value =
-              response.treinosFalta;
-            alert("Planos de treino salvos com sucesso!");
-          })
-          .salvarPlanos(planos);
-      }
+function salvarPlanos() {
+  const url = 'https://script.google.com/macros/s/AKfycbzP5t8JahD_2Z-L0UpNocR_XlV7WdEnyAuZu0iuYCg/dev';  // Substitua pelo URL do seu Web App
+  
+  fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({ planos: planos }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById("treinosDados").value = data.treinosDados;
+    document.getElementById("treinosPendentes").value = data.treinosPendentes;
+    document.getElementById("treinosFalta").value = data.treinosFalta;
+    alert("Planos de treino salvos com sucesso!");
+  })
+  .catch(error => console.error('Erro ao salvar planos:', error));
+}
+      
     </script>
   </body>
 </html>
