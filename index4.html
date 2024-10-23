@@ -263,11 +263,27 @@
         const personalTrainer =
           document.getElementById("personalTrainer").value;
         if (mes) {
-          google.script.run
-            .withSuccessHandler(mostrarPlanos)
-            .obterPlanos(nomeFiltro, mes, personalTrainer, dia);
-        }
+          const url = 'https://script.google.com/macros/s/YOUR_WEB_APP_URL/exec';  // Substitua pelo URL do seu Web App
+
+    const params = {
+      nomeFiltro: nomeFiltro,
+      mes: mes,
+      dia: dia,
+      personalTrainer: personalTrainer
+    };
+
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(params),
+      headers: {
+        'Content-Type': 'application/json'
       }
+    })
+      .then(response => response.json())
+      .then(data => mostrarPlanos(data))
+      .catch(error => console.error('Erro ao buscar planos:', error));
+  }
+}
 
       function adicionarExercicio(idPlano) {
         const divExercicio = document.createElement("div");
