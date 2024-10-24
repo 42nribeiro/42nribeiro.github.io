@@ -7,7 +7,7 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "https://res.cloudinary.com/duf4kjbu0/image/upload/t_logo_background_black/v1728675558/only_logo_rtvhvp.pngs",
+      "src": "src/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
