@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plano-treino-cache-v1';
+const CACHE_NAME = 'plano-treino-cache-v2';
 const urlsToCache = [
   '/',
   '/index4.html',
@@ -12,6 +12,7 @@ const urlsToCache = [
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
+      console.log('Opened cache');
       return cache.addAll(urlsToCache);
     })
   );
@@ -20,7 +21,22 @@ self.addEventListener('install', function(event) {
 self.addEventListener('fetch', function(event) {
   event.respondWith(
     caches.match(event.request).then(function(response) {
-      return response || fetch(event.request);
+      // Se o recurso está em cache, retorna o cache
+      if (response) {
+        return response;
+      }
+      // Caso contrário, faz uma requisição na rede
+      return fetch(event.request).then(function(networkResponse) {
+        // Verifica se a resposta é válida e salva no cache
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
+        }
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      });
     })
   );
 });
