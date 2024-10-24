@@ -1,1 +1,258 @@
-Hello world!
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Training Studio</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-beta1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container bg-white p-4 shadow-sm rounded">
+        <div class="text-center mb-4">
+            <img src="src/icons/icon-192x192.png" alt="Logo" class="img-fluid" style="max-width: 50%">
+        </div>
+
+        <div class="row g-2">
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Cliente:</span>
+                    <input type="text" id="clienteInput" class="form-control">
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">PT:</span>
+                    <select id="ptSelect" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="JM">PRO JM</option>
+                        <option value="GIL">PRO GIL</option>
+                        <option value="JP">PRO JP</option>
+                        <option value="EL">PRO EL</option>
+                        <option value="DN">PRO DN</option>
+                        <option value="NR">PRO NR</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-2 mt-2">
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Mês:</span>
+                    <select id="mesSelect" class="form-select">
+                        <option value="">Selecionar Mês</option>
+                        <option value="Janeiro">Janeiro</option>
+                        <option value="Fevereiro">Fevereiro</option>
+                        <option value="Março">Março</option>
+                        <option value="Abril">Abril</option>
+                        <option value="Maio">Maio</option>
+                        <option value="Junho">Junho</option>
+                        <option value="Julho">Julho</option>
+                        <option value="Agosto">Agosto</option>
+                        <option value="Setembro">Setembro</option>
+                        <option value="Outubro">Outubro</option>
+                        <option value="Novembro">Novembro</option>
+                        <option value="Dezembro">Dezembro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Dia:</span>
+                    <input type="number" id="diaInput" class="form-control" min="1" max="31">
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-2 mt-2">
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Número de Treinos:</span>
+                    <input type="text" id="numTreinos" class="form-control" readonly>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Treinos Concluídos:</span>
+                    <input type="text" id="treinosConcluidos" class="form-control" readonly>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Treinos Pendentes:</span>
+                    <input type="text" id="treinosPendentes" class="form-control" readonly>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Treinos por Falta:</span>
+                    <input type="text" id="treinosFalta" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div id="training-plans" class="mt-4"></div>
+    </div>
+
+    <script>
+        // URL do seu Apps Script deployment
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJYE7nZbcQiTupYz2kUtQrVt0eu_R5oMKiD-Nzi1GIFOIIfsahxlfTjPd2Yh-K5G4S/exec';
+        let offlineData = [];
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => console.log('ServiceWorker registrado'))
+                    .catch(error => console.log('Erro no registro do ServiceWorker:', error));
+            });
+        }
+
+        // Função para buscar dados do Apps Script
+        async function fetchPlanos(filtros) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(filtros)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro na requisição');
+                }
+
+                const data = await response.json();
+                if (data.erro) {
+                    throw new Error(data.erro);
+                }
+
+                // Salvar dados no localStorage para uso offline
+                localStorage.setItem('lastFetchedData', JSON.stringify(data));
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                // Tentar usar dados do cache
+                const cachedData = localStorage.getItem('lastFetchedData');
+                return cachedData ? JSON.parse(cachedData) : { planos: [] };
+            }
+        }
+
+        // Função para salvar planos
+        async function salvarPlanos(planos) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ planos })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao salvar');
+                }
+
+                const result = await response.json();
+                atualizarContadores(result);
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                // Salvar localmente para sincronização posterior
+                offlineData.push(planos);
+                localStorage.setItem('pendingData', JSON.stringify(offlineData));
+            }
+        }
+
+        // Função para renderizar planos
+        function renderizarPlanos(planos) {
+            const container = document.getElementById('training-plans');
+            container.innerHTML = '';
+
+            planos.forEach((plano, index) => {
+                const card = document.createElement('div');
+                card.className = 'card mb-3';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${plano.cliente}</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p class="mb-1"><strong>Data:</strong> ${plano.data}</p>
+                                <p class="mb-1"><strong>Hora:</strong> ${plano.hora}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-1"><strong>PT:</strong> ${plano.personalTrainer}</p>
+                                <p class="mb-1"><strong>Duração:</strong> ${plano.duracao}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="btn-group" role="group">
+                                    <button onclick="atualizarStatus(${index}, 'Done')" class="btn btn-success btn-sm">Concluído</button>
+                                    <button onclick="atualizarStatus(${index}, 'Delay')" class="btn btn-warning btn-sm">Pendente</button>
+                                    <button onclick="atualizarStatus(${index}, 'Fail')" class="btn btn-danger btn-sm">Falta</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Função para atualizar status
+        function atualizarStatus(index, status) {
+            const plano = planosAtuais[index];
+            plano.status = status;
+            salvarPlanos([plano]);
+        }
+
+        // Função para atualizar contadores
+        function atualizarContadores(result) {
+            document.getElementById('treinosConcluidos').value = result.treinosDados;
+            document.getElementById('treinosPendentes').value = result.treinosPendentes;
+            document.getElementById('treinosFalta').value = result.treinosFalta;
+        }
+
+        // Event Listeners
+        document.getElementById('clienteInput').addEventListener('input', buscarPlanos);
+        document.getElementById('ptSelect').addEventListener('change', buscarPlanos);
+        document.getElementById('mesSelect').addEventListener('change', buscarPlanos);
+        document.getElementById('diaInput').addEventListener('input', buscarPlanos);
+
+        // Função para buscar planos com os filtros atuais
+        async function buscarPlanos() {
+            const filtros = {
+                nomeFiltro: document.getElementById('clienteInput').value,
+                personalTrainer: document.getElementById('ptSelect').value,
+                mes: document.getElementById('mesSelect').value,
+                dia: document.getElementById('diaInput').value
+            };
+
+            const data = await fetchPlanos(filtros);
+            planosAtuais = data.planos;
+            renderizarPlanos(data.planos);
+            document.getElementById('numTreinos').value = data.planos.length;
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            buscarPlanos();
+            // Sincronizar dados pendentes quando online
+            window.addEventListener('online', async () => {
+                const pendingData = JSON.parse(localStorage.getItem('pendingData') || '[]');
+                if (pendingData.length > 0) {
+                    for (const planos of pendingData) {
+                        await salvarPlanos(planos);
+                    }
+                    localStorage.removeItem('pendingData');
+                    offlineData = [];
+                }
+            });
+        });
+    </script>
+</body>
+</html>
