@@ -1,7 +1,7 @@
 const CACHE_NAME = 'plano-treino-cache-v2';
 const urlsToCache = [
   '/',
-  '/index4.html',
+  '/index_test.html',
   '/manifest.json',
   '/src/icons/icon-192x192.png',
   '/src/icons/icon-512x512.png',
