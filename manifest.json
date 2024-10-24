@@ -1,6 +1,6 @@
 {
   "name": "Pro Training Studio",
-  "short_name": "Pro Training",
+  "short_name": "ProTrainingStudio",
   "start_url": "/index4.html",
   "display": "standalone",
   "background_color": "#ffffff",
