@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plano de Treino Interativo</title>
+    <!-- Adicionando Bootstrap e Font Awesome -->
+    <link rel="manifest" href="manifest.json" />
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .input-group-sm .form-control,
+      .input-group-sm .input-group-text {
+        width: auto;
+        flex: 1 1 auto;
+      }
+
+      .dynamic-width-input {
+        width: auto;
+        display: inline-block;
+      }
+
+      .input-group-sm .form-control {
+        min-width: 50px;
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-light d-flex justify-content-center align-items-center min-vh-100"
+  >
+    <div class="bg-white p-4 shadow-sm rounded">
+      <div class="text-center mb-4">
+        <img
+          src="https://pic.png"
+          alt="Imagem do Rodapé"
+          class="img-fluid"
+          style="max-width: 50%"
+        />
+      </div>
+      <div class="text-center mb-4">
+        <div class="row g-2">
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Cliente:</span>
+              </div>
+              <input
+                type="text"
+                id="nomeFiltro"
+                class="form-control"
+                placeholder="Procurar Cliente"
+                oninput="delayedFiltrarPlanos()"
+              />
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">PT:</span>
+              </div>
+              <select
+                id="personalTrainer"
+                class="form-control"
+                onchange="delayedFiltrarPlanos()"
+              >
+                <option value=""></option>
+                <option value="PRO JM">PRO JM</option>
+                <option value="PRO GIL">PRO GIL</option>
+                <option value="PRO JP">PRO JP</option>
+                <option value="PRO EL">PRO EL</option>
+                <option value="PRO DN">PRO DN</option>
+                <option value="PRO NR">PRO NR</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row g-2 mt-2">
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Mês:</span>
+              </div>
+              <select
+                id="mes"
+                class="form-control"
+                onchange="delayedFiltrarPlanos()"
+              >
+                <option value="">Selecionar Mês</option>
+                <option value="Janeiro">Janeiro</option>
+                <option value="Fevereiro">Fevereiro</option>
+                <option value="Março">Março</option>
+                <option value="Abril">Abril</option>
+                <option value="Maio">Maio</option>
+                <option value="Junho">Junho</option>
+                <option value="Julho">Julho</option>
+                <option value="Agosto">Agosto</option>
+                <option value="Setembro">Setembro</option>
+                <option value="Outubro">Outubro</option>
+                <option value="Novembro">Novembro</option>
+                <option value="Dezembro">Dezembro</option>
+              </select>
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Dia:</span>
+              </div>
+              <input
+                type="number"
+                id="dia"
+                class="form-control"
+                min="1"
+                max="31"
+                onchange="delayedFiltrarPlanos()"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="row g-2 mt-2">
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Número de Treinos:</span>
+              </div>
+              <input
+                type="text"
+                id="numeroTreinos"
+                class="form-control dynamic-width-input"
+                value="0"
+                disabled
+              />
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Treinos Concluídos:</span>
+              </div>
+              <input
+                type="text"
+                id="treinosDados"
+                class="form-control dynamic-width-input"
+                value="0"
+                disabled
+              />
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Treinos Pendentes:</span>
+              </div>
+              <input
+                type="text"
+                id="treinosPendentes"
+                class="form-control dynamic-width-input"
+                value="0"
+                disabled
+              />
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Treinos por Falta:</span>
+              </div>
+              <input
+                type="text"
+                id="treinosFalta"
+                class="form-control dynamic-width-input"
+                value="0"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="training-plans"></div>
+    </div>
+    <script>
+      const exercicios = {
+        Peito: ["CHEST PRESS", "PUSH UP", "CH. PRESS H."],
+        Costas: ["LOW ROW ∆", "LAT RAISE"],
+        Perna: [
+          "LEG PRESS",
+          "LEG CURL",
+          "LEG EXT",
+          "WALK LUNGE",
+          "GOBLET SQUAT",
+          "DEAD LIFT",
+        ],
+        Core: [
+          "TORSO ARM N",
+          "TORSO ARM S",
+          "TORSO ROT",
+          "ABD ISO",
+          "LUMBAR STG",
+        ],
+        Cardio: ["RUN", "BIKE", "JUMP ROPE"],
+      };
+
+      let contadorPlano = 0;
+      let planos = [];
+      let treinosDados = 0;
+      let treinosPendentes = 0;
+      let treinosFalta = 0;
+
+      function ajustarLarguraInput(input) {
+        const span = document.createElement("span");
+        span.style.visibility = "hidden";
+        span.style.whiteSpace = "pre";
+        span.style.fontSize = window.getComputedStyle(input).fontSize;
+        span.textContent = input.value || input.placeholder;
+        document.body.appendChild(span);
+        input.style.width = span.offsetWidth * 10 + "px";
+        document.body.removeChild(span);
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const inputs = document.querySelectorAll(".dynamic-width-input");
+        inputs.forEach((input) => {
+          ajustarLarguraInput(input);
+          input.addEventListener("input", function () {
+            ajustarLarguraInput(input);
+          });
+        });
+      });
+
+      function togglePlano(id) {
+        const planoConteudo = document.getElementById(`plano-conteudo-${id}`);
+        if (planoConteudo.style.display === "none") {
+          planoConteudo.style.display = "block";
+        } else {
+          planoConteudo.style.display = "none";
+        }
+      }
+
+      // Função de debounce
+      function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      }
+
+      // Substituir delayedFiltrarPlanos pela versão com debounce
+      const delayedFiltrarPlanos = debounce(filtrarPlanos, 500);
+
+      function filtrarPlanos() {
+        const nomeFiltro = document
+          .getElementById("nomeFiltro")
+          .value.toLowerCase();
+        const mes = document.getElementById("mes").value;
+        const dia = document.getElementById("dia").value;
+        const personalTrainer =
+          document.getElementById("personalTrainer").value;
+        if (mes) {
+          const url = 'https://script.google.com/macros/s/id/exec';  // Substitua pelo URL do seu Web App
+
+    const params = {
+      nomeFiltro: nomeFiltro,
+      mes: mes,
+      dia: dia,
+      personalTrainer: personalTrainer
+    };
+
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(params),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => mostrarPlanos(data))
+      .catch(error => console.error('Erro ao buscar planos:', error));
+  }
+}
+
+      function adicionarExercicio(idPlano) {
+        const divExercicio = document.createElement("div");
+        divExercicio.className = "row mb-2";
+        divExercicio.innerHTML = `
+    <div class="col">
+      <select class="form-control form-control-sm" id="grupoMuscular-${idPlano}" onchange="atualizarExercicios(this, ${idPlano})">
+        <option value="Peito">Peito</option>
+        <option value="Costas">Costas</option>
+        <option value="Perna">Perna</option>
+        <option value="Core">Core</option>
+        <option value="Cardio">Cardio</option>
+      </select>
+    </div>
+    <div class="col">
+      <input type="text" list="exercicios-${idPlano}" class="form-control form-control-sm" placeholder="Exercício" id="exercicio-${idPlano}">
+      <datalist id="exercicios-${idPlano}">
+        ${exercicios["Peito"]
+          .map((exercicio) => `<option value="${exercicio}">`)
+          .join("")}
+      </datalist>
+    </div>
+    <div class="col">
+      <select class="form-control form-control-sm" onchange="atualizarRepeticoes(this, ${idPlano})">
+        ${Array.from(
+          { length: 5 },
+          (_, i) => `<option value="${i + 1}">${i + 1}</option>`
+        ).join("")}
+      </select>
+    </div>
+    <div class="col reps-container"></div>
+    <div class="col">
+      <input type="text" class="form-control form-control-sm" placeholder="Ajustes">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-light btn-sm" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-trash"></i></button>
+    </div>
+  `;
+        document
+          .getElementById(`exercise-list-${idPlano}`)
+          .appendChild(divExercicio);
+      }
+
+      function atualizarExercicios(selectElement, idPlano) {
+        const grupoMuscular = selectElement.value;
+        const datalist = document.getElementById(`exercicios-${idPlano}`);
+        datalist.innerHTML = exercicios[grupoMuscular]
+          .map((exercicio) => `<option value="${exercicio}">`)
+          .join("");
+      }
+
+      function atualizarRepeticoes(elementoSelect, idPlano) {
+        const containerRepeticoes =
+          elementoSelect.parentElement.nextElementSibling;
+        const series = elementoSelect.value;
+        containerRepeticoes.innerHTML = Array.from(
+          { length: series },
+          (_, i) => `
+      <div class="d-flex gap-2">
+        <input type="text" class="form-control form-control-sm" style="width: 50px;" maxlength="3" placeholder="R ${
+          i + 1
+        }">
+        <input type="text" class="form-control form-control-sm" style="width: 50px;" maxlength="3" placeholder="P ${
+          i + 1
+        }">
+      </div>
+    `
+        ).join("");
+      }
+
+      function mostrarPlanos(resposta) {
+        if (resposta.erro) {
+          alert(resposta.erro);
+          return;
+        }
+
+        const planosFiltrados = resposta.planos;
+        document.getElementById("training-plans").innerHTML = "";
+        contadorPlano = 0;
+        planos = [];
+        let treinosDados = 0;
+        let treinosPendentes = 0;
+        let treinosFalta = 0;
+
+        planosFiltrados.forEach((plano, index) => {
+          adicionarPlano(
+            plano.titulo,
+            plano.data,
+            plano.cliente,
+            plano.personalTrainer,
+            plano.hora,
+            plano.duracao
+          );
+
+          const lastPlanoDiv = document.querySelector(
+            `#training-plans > div:last-child`
+          );
+          const selectStatus = lastPlanoDiv.querySelector("select");
+          selectStatus.value = plano.status;
+
+          if (plano.status === "Realizado") {
+            treinosDados++;
+          } else if (plano.status === "Pendente") {
+            treinosPendentes++;
+          } else if (plano.status === "Faltou") {
+            treinosFalta++;
+          }
+        });
+
+        document.getElementById("numeroTreinos").value = planosFiltrados.length;
+        document.getElementById("treinosDados").value = treinosDados;
+        document.getElementById("treinosPendentes").value = treinosPendentes;
+        document.getElementById("treinosFalta").value = treinosFalta;
+      }
+
+      function adicionarPlano(
+        titulo = "",
+        dataValor = "",
+        cliente = "",
+        personalTrainer = "",
+        hora = "",
+        duracao = ""
+      ) {
+        contadorPlano++;
+        const divPlano = document.createElement("div");
+        divPlano.className = "card mb-3";
+
+        const ptSelecionado = document.getElementById("personalTrainer").value;
+
+        divPlano.innerHTML = `
+    <div class="card-header" style="cursor: pointer;" onclick="togglePlano(${contadorPlano})">
+      <span>
+        Mês: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${
+          document.getElementById("mes").value
+        }" disabled style="width: 80px;">
+        Sessão: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${contadorPlano}" disabled style="width: 50px;">
+        Duração: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${duracao}" disabled style="width: 60px;">
+        Hora: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${hora}" disabled style="width: 55px;">
+        Data: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${dataValor}" disabled style="width: 90px;">
+        ${
+          ptSelecionado !== personalTrainer
+            ? `PT: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${personalTrainer}" disabled style="width: 40px;">`
+            : ""
+        }
+        Cliente: <input type="text" class="form-control dynamic-width-input form-control-sm d-inline-block" value="${cliente}" disabled style="width: 100px;">
+        Status:
+        <select class="form-control dynamic-width-input form-control-sm d-inline-block" style="width: 80px;">
+          <option value="Done">Done</option>
+          <option value="Delay" selected>Delay</option>
+          <option value="Fail">Fail</option>
+        </select>
+      </span>
+    </div>
+    <div class="card-body plano-conteudo" id="plano-conteudo-${contadorPlano}" style="display: none;">
+      <div class="exercise-list" id="exercise-list-${contadorPlano}">
+        <div class="row mb-2">
+          <div class="col"><strong>Grupo Muscular</strong></div>
+          <div class="col"><strong>Exercício</strong></div>
+          <div class="col"><strong>Série</strong></div>
+          <div class="col"><strong>Rep  Peso</strong></div>
+          <div class="col"><strong>Ajustes</strong></div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-primary" onclick="adicionarExercicio(${contadorPlano})"><i class="fas fa-plus"></i> Adicionar Exercício</button>
+        <button class="btn btn-success" onclick="salvarPlanos()"><i class="fas fa-save"></i> Salvar Treino</button>
+      </div>
+    </div>
+  `;
+
+        document.getElementById("training-plans").appendChild(divPlano);
+        planos.push({
+          sessao: contadorPlano,
+          titulo: titulo || `Treino ${contadorPlano}`,
+          data: dataValor,
+          cliente: cliente,
+          personalTrainer: personalTrainer,
+          duracao: duracao,
+          hora: hora,
+          status: divPlano.querySelector("select").value,
+        });
+      }
+function salvarPlanos() {
+  const url = 'https://script.google.com/macros/s/id/exec';  // Substitua pelo URL do seu Web App
+  
+  fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({ planos: planos }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById("treinosDados").value = data.treinosDados;
+    document.getElementById("treinosPendentes").value = data.treinosPendentes;
+    document.getElementById("treinosFalta").value = data.treinosFalta;
+    alert("Planos de treino salvos com sucesso!");
+  })
+  .catch(error => console.error('Erro ao salvar planos:', error));
+}
+
+// Função para buscar eventos do Google Calendar via Apps Script
+function fetchCalendarEvents() {
+  const url = 'https://script.google.com/macros/s/id/exec'; // Substitua com o ID da Web App
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      console.log("Eventos recebidos:", data);
+      // Atualizar interface do usuário com os dados recebidos
+    })
+    .catch(error => console.error('Erro ao buscar eventos:', error));
+}
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(registration => console.log('SW registrado:', registration))
+      .catch(registrationError => console.log('Erro no registro do SW:', registrationError));
+  });
+}
+
+    </script>
+  </body>
+</html>
