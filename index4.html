@@ -487,15 +487,28 @@ function salvarPlanos() {
   .catch(error => console.error('Erro ao salvar planos:', error));
 }
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-    .then(registration => {
-      console.log('Service Worker registrado com sucesso:', registration);
+// Função para buscar eventos do Google Calendar via Apps Script
+function fetchCalendarEvents() {
+  const url = 'https://script.google.com/macros/s/AKfycbyJYE7nZbcQiTupYz2kUtQrVt0eu_R5oMKiD-Nzi1GIFOIIfsahxlfTjPd2Yh-K5G4S/exec'; // Substitua com o ID da Web App
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      console.log("Eventos recebidos:", data);
+      // Atualizar interface do usuário com os dados recebidos
     })
-    .catch(error => {
-      console.log('Falha ao registrar o Service Worker:', error);
-    });
-}     
+    .catch(error => console.error('Erro ao buscar eventos:', error));
+}
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(registration => console.log('SW registrado:', registration))
+      .catch(registrationError => console.log('Erro no registro do SW:', registrationError));
+  });
+}
+
     </script>
   </body>
 </html>
